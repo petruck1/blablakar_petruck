@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OGA Player — встроенное аудио</title>
+    <style>
+      :root {
+        --bg: #080a10;
+        --card: #111522;
+        --card2: #171b2a;
+        --line: #252b3c;
+        --text: #f4f7ff;
+        --muted: #8f98ad;
+        --a: #7c5cff;
+        --a2: #9f8cff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 15% 10%, #2a1d672b, transparent 30%),
+          radial-gradient(circle at 85% 80%, #1d90a51b, transparent 28%),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        padding: 30px 16px 70px;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: auto;
+      }
+      .hero {
+        margin: 8px 0 22px;
+      }
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--a2);
+        font-weight: 800;
+      }
+      .hero h1 {
+        font-size: clamp(36px, 7vw, 62px);
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+        margin: 9px 0 12px;
+      }
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+      .card {
+        background: linear-gradient(180deg, #111522f2, #0f1320f5);
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        box-shadow: 0 25px 70px #0007;
+        overflow: hidden;
+      }
+      .drop {
+        padding: 28px;
+        border-bottom: 1px solid var(--line);
+        border-radius: 26px 26px 0 0;
+        border: 1px dashed #8f7cff66;
+        background: #7c5cff0d;
+        transition: 0.2s;
+      }
+      .drop.drag {
+        background: #7c5cff22;
+        border-color: #b2a5ff;
+        transform: translateY(-1px);
+      }
+      .dropbox {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      .icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 17px;
+        display: grid;
+        place-items: center;
+        background: #7c5cff22;
+        border: 1px solid #9f8cff42;
+        font-size: 25px;
+      }
+      .drop h2 {
+        font-size: 19px;
+        margin: 0 0 5px;
+      }
+      .drop p {
+        margin: 0;
+        color: var(--muted);
+      }
+      input[type="file"] {
+        display: none;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 13px;
+        padding: 11px 15px;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(135deg, var(--a), #5b7cff);
+        cursor: pointer;
+        margin-top: 16px;
+      }
+      .btn.secondary {
+        background: #ffffff0d;
+        border: 1px solid var(--line);
+        color: var(--text);
+        margin-left: 8px;
+      }
+      .status {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 10px 0 0;
+      }
+      .list {
+        padding: 8px 16px 16px;
+      }
+      .empty {
+        padding: 34px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .track {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 15px;
+        margin-top: 10px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+      }
+      .play {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--a);
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .name {
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .track audio {
+        width: min(420px, 36vw);
+      }
+      .footer {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+      .pill {
+        display: inline-block;
+        padding: 5px 9px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #ffffff08;
+        margin-top: 10px;
+      }
+      .mini {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      @media (max-width: 720px) {
+        .track {
+          grid-template-columns: auto 1fr;
+        }
+        .track audio {
+          grid-column: 1/-1;
+          width: 100%;
+        }
+        .dropbox {
+          align-items: flex-start;
+        }
+        .btn.secondary {
+          margin-left: 0;
+        }
+        .actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .actions .btn {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="hero">
+        <div class="eyebrow">Standalone OGA player</div>
+        <h1>Твои аудиофайлы<br />уже внутри сайта.</h1>
+        <p>
+          Добавь .oga файлы один раз и создай новый HTML, в котором они будут
+          встроены прямо в код.
+        </p>
+      </section>
+
+      <main class="card">
+        <section class="drop" id="drop">
+          <div class="dropbox">
+            <div class="icon">♫</div>
+            <div>
+              <h2>Добавить .oga файлы</h2>
+              <p>Нажми кнопку или перетащи файлы сюда.</p>
+            </div>
+          </div>
+          <div class="actions">
+            <label class="btn" for="files">＋ Выбрать OGA</label>
+            <button class="btn secondary" id="build" type="button">
+              ⚙ Создать HTML со встроенным аудио
+            </button>
+          </div>
+          <div class="status" id="status">
+            Встроенных файлов: <b id="count">0</b>
+          </div>
+        </section>
+        <section class="list" id="list"></section>
+      </main>
+      <div class="footer">
+        Файлы кодируются в Base64 и сохраняются внутри самого HTML. Никакого
+        сервера не нужно.
+      </div>
+      <input id="files" type="file" accept=".oga,audio/ogg,audio/*" multiple />
+    </div>
+    <script>
+      // ============================================================
+      // ВАЖНО: аудио, которые уже встроены в этот HTML, находятся
+      // в массиве EMBEDDED_AUDIO ниже. После создания нового HTML
+      // кнопкой «Создать HTML…» этот массив будет заполнен автоматически.
+      // ============================================================
+      const EMBEDDED_AUDIO = [
+        // Пример структуры:
+        // { name: "music.oga", data: "data:audio/ogg;base64,..." }
+      ];
+
+      const filesInput = document.getElementById("files");
+      const drop = document.getElementById("drop");
+      const list = document.getElementById("list");
+      const count = document.getElementById("count");
+      const build = document.getElementById("build");
+      let selected = [...EMBEDDED_AUDIO];
+
+      function esc(s) {
+        return s.replace(
+          /[&<>'"]/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              "'": "&#39;",
+              '"': "&quot;",
+            })[c],
+        );
+      }
+      function bytesFromDataUrl(data) {
+        const i = data.indexOf(",");
+        return i < 0
+          ? 0
+          : Math.max(0, Math.floor((data.length - i - 1) * 0.75));
+      }
+      function fmt(bytes) {
+        if (bytes < 1024) return bytes + " B";
+        const units = ["KB", "MB", "GB"];
+        let n = bytes / 1024;
+        let u = 0;
+        while (n >= 1024 && u < units.length - 1) {
+          n /= 1024;
+          u++;
+        }
+        return n.toFixed(n >= 10 ? 1 : 2) + " " + units[u];
+      }
+      function render() {
+        count.textContent = selected.length;
+        if (!selected.length) {
+          list.innerHTML =
+            '<div class="empty">Пока нет аудио.<div class="pill">.oga → встроить в HTML → открыть готовый файл</div></div>';
+          return;
+        }
+        list.innerHTML = "";
+        selected.forEach((f, i) => {
+          const el = document.createElement("div");
+          el.className = "track";
+          el.innerHTML = `<button class="play" type="button" title="Воспроизвести">▶</button><div><div class="name">${esc(f.name)}</div><div class="meta">OGA · ${fmt(bytesFromDataUrl(f.data))}</div></div><audio controls preload="metadata" src="${f.data}"></audio>`;
+          const audio = el.querySelector("audio"),
+            btn = el.querySelector(".play");
+          btn.onclick = () => {
+            document.querySelectorAll("audio").forEach((a) => {
+              if (a !== audio) a.pause();
+            });
+            if (audio.paused) {
+              audio.play();
+              btn.textContent = "❚❚";
+            } else {
+              audio.pause();
+              btn.textContent = "▶";
+            }
+          };
+          audio.onplay = () => (btn.textContent = "❚❚");
+          audio.onpause = () => (btn.textContent = "▶");
+          list.appendChild(el);
+        });
+      }
+      async function addFiles(files) {
+        const incoming = [...files].filter((f) => /\.oga$/i.test(f.name));
+        if (!incoming.length) {
+          alert("Нужны файлы с расширением .oga");
+          return;
+        }
+        for (const f of incoming) {
+          const data = await new Promise((res, rej) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.onerror = rej;
+            r.readAsDataURL(f);
+          });
+          selected.push({ name: f.name, data });
+        }
+        render();
+      }
+      filesInput.addEventListener("change", (e) => addFiles(e.target.files));
+      ["dragenter", "dragover"].forEach((ev) =>
+        drop.addEventListener(ev, (e) => {
+          e.preventDefault();
+          drop.classList.add("drag");
+        }),
+      );
+      ["dragleave", "drop"].forEach((ev) =>
+        drop.addEventListener(ev, (e) => {
+          e.preventDefault();
+          drop.classList.remove("drag");
+        }),
+      );
+      drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+
+      build.addEventListener("click", () => {
+        if (!selected.length) {
+          alert("Сначала добавь хотя бы один .oga файл.");
+          return;
+        }
+        const html = document.documentElement.outerHTML;
+        const payload =
+          "const EMBEDDED_AUDIO = " + JSON.stringify(selected, null, 2) + ";";
+        const out = html.replace(
+          /const EMBEDDED_AUDIO\s*=\s*\[[\s\S]*?\];/,
+          payload,
+        );
+        const blob = new Blob(["<!doctype html>\n" + out], {
+          type: "text/html;charset=utf-8",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "oga-player-with-audio.html";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+      });
+      render();
+    </script>
+  </body>
+</html>
