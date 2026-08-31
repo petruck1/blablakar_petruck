@@ -2,12 +2,21 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0; url=./oga_player_embedded.html">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Перенаправление — OGA Player</title>
+    <!-- Redirect to the embedded player page -->
+    <meta http-equiv="refresh" content="0; url=./oga_player_embedded.html">
+    <link rel="canonical" href="./oga_player_embedded.html">
   </head>
   <body>
     <p>Если перенаправление не сработало, откройте вручную <a href="./oga_player_embedded.html">oga_player_embedded.html</a>.</p>
-    <script>location.replace('./oga_player_embedded.html');</script>
+    <script>
+      // Fallback JS redirect
+      try {
+        location.replace('./oga_player_embedded.html');
+      } catch (e) {
+        // nothing
+      }
+    </script>
   </body>
 </html>
